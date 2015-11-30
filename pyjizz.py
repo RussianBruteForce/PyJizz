@@ -1,4 +1,5 @@
 import sys
+import os
 from model import Porn
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot, QUrl
 from parser import PyJizzParser
@@ -15,7 +16,7 @@ class PyJizz(QObject):
 		self.parser = PyJizzParser(self.model)
 		self.player = QMediaPlayer()
 		self.player.setVideoOutput(self.mainwindow.player)
-		self.player.setMedia(QMediaContent(QUrl.fromLocalFile("/home/asmodeus/dev/python/tehno/PyJizz/123.mkv")));
+		self.player.setMedia(QMediaContent(QUrl.fromLocalFile("/home/asmodeus/dev/python/tehno/PyJizz/123.mp4")));
 		self.player.setVolume(100);
 		self.connections()
 		
@@ -31,10 +32,18 @@ class PyJizz(QObject):
 		self.mainwindow.setEnabled(not blocked)
 
 	def showCategories(self):
-		self.mainwindow.addCategory(0,"0", self.model.categories_image_path + "/0.jpg")
-		self.mainwindow.addCategory(1,"1", self.model.categories_image_path + "/1.jpg")
-		self.mainwindow.addCategory(2,"2", self.model.categories_image_path + "/2.jpg")
-		self.mainwindow.addCategory(3,"3", self.model.categories_image_path + "/3.jpg")
+		#if not os.path.isdir(self.model.categories_image_path):
+		self.parser.parseCategories()
+		id = 0
+		for x in self.model.porn:
+			path = '{ip}/{i}.jpg'.format(ip = self.model.categories_image_path, i = id)
+			name = x['category']
+			self.mainwindow.addCategory(id, name, path)
+			id += 1
+		#self.mainwindow.addCategory(0,"0", self.model.categories_image_path + "/0.jpg")
+		#self.mainwindow.addCategory(1,"1", self.model.categories_image_path + "/1.jpg")
+		#self.mainwindow.addCategory(2,"2", self.model.categories_image_path + "/2.jpg")
+		#self.mainwindow.addCategory(3,"3", self.model.categories_image_path + "/3.jpg")
 	
 	def pageHandler(self, page):
 		print(page)
