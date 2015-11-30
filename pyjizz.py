@@ -1,10 +1,10 @@
 import sys
 from model import Porn
-from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot, QUrl
 from parser import PyJizzParser
 
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtMultimedia import Qt
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from mainwindow import PyJizzMainWindow
 
 class PyJizz(QObject):
@@ -13,8 +13,10 @@ class PyJizz(QObject):
 		self.mainwindow = mainwindow
 		self.model = model
 		self.parser = PyJizzParser(self.model)
-		
-
+		self.player = QMediaPlayer()
+		self.player.setVideoOutput(self.mainwindow.player)
+		self.player.setMedia(QMediaContent(QUrl.fromLocalFile("/home/asmodeus/dev/python/tehno/PyJizz/123.mkv")));
+		self.player.setVolume(100);
 		self.connections()
 		
 		self.showCategories()
@@ -36,6 +38,7 @@ class PyJizz(QObject):
 	
 	def pageHandler(self, page):
 		print(page)
+		self.player.play()
 		if page == 1:
 			self.mainwindow.ui.pagePrevButton.setEnabled(False)
 		elif not self.mainwindow.ui.pagePrevButton.isEnabled():

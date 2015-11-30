@@ -18,8 +18,8 @@ class PyJizzMainWindow(QMainWindow):
 		self.ui.pageSpinBox.setMinimum(1)
 		#self.ui.pag
 		
-		self.video = QVideoWidget()
-		self.ui.playerLayout.addWidget(self.video)
+		self.player = QVideoWidget()
+		self.ui.playerLayout.addWidget(self.player)
 		
 		self.ui.pageNextButton.clicked.connect(self.onNextPageButton)
 		self.ui.pagePrevButton.clicked.connect(self.onPrevPageButton)
