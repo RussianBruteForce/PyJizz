@@ -10,13 +10,15 @@ class PornHubCategoryParser(Spider):
 	def __init__(self, model):
 		super(PornHubCategoryParser, self).__init__()
 		self.model = model
-		self.cat_index = 0
+		self.cat_index = 0 # index of category, from 0
 		PornHubCategoryParser.initial_urls.append(self.model.site_categories)
 		
 
 	def task_initial(self, grab, task):
+		# find category url and add new category to the model
 		for elem in grab.doc.select("//div[@class='category-wrapper']/a"):
 			self.model.addCategoryUrl(self.model.site + elem.attr('href'))
+		# download category previews
 		for elem in grab.doc.select("//div[@class='category-wrapper']/a/img"):
 			yield Task("image", url=elem.attr('src'), num=self.cat_index)
 			self.cat_index += 1
@@ -24,15 +26,9 @@ class PornHubCategoryParser(Spider):
 			#print(elem.attr('src'))
 
 	def task_image(self, grab, task):
-		#print( 'Image downloaded for {0}'.format(task.url))
 		path = '{path}/{i}.jpg'.format(i = task.num, path = self.model.categories_image_path)
 		grab.response.save(path)
-	
-	def task_page(self, grab, task):
-		for elem in grab.doc.select("//li[@class='videoblock']"):
-			print(elem.attr('id'))
-			
-			
+
 class PornHubPageParser(Spider):
 	initial_urls = []
 	#priority_mode='const'
@@ -40,36 +36,39 @@ class PornHubPageParser(Spider):
 	def __init__(self, model, page_url, category_id, page = 0):
 		super(PornHubPageParser, self).__init__()
 		self.model = model
-		self.category_id = category_id
-		self.page = page
+		self.category_id = category_id # from 0
+		self.page = page               # from 0 or 1
 		PornHubPageParser.initial_urls.append(page_url)
-		print("pp")
 		
 
 	def task_initial(self, grab, task):
-		porn = []
+		porn = [] # list or porn videos from this page
 		
+		# get vkeys
 		for elem in grab.doc.select("//li[@class='videoblock']"):
 			porn.append({'vkey': elem.attr('_vkey')})
 		
+		# append names to vkeys
 		i = 0;
 		for elem in grab.doc.select("//li[@class='videoblock']/a[@class='img']"):
 			porn[i]['name'] = elem.attr('_vkey')
 			i += 1
+			print(porn[i]['name'])
 		
+		# if this is category url (page == 0), we should detect page url
 		page_url = str()
 		if self.page == 0:
 			for elem in grab.doc.select("//li[@class='page_number']/a[@class='greyButton']"):
 				if elem.text() == '2':
 					page_url = elem.attr('href')[0:-1]
 		
-		print(page_url)
+		#print(page_url)
+		# add porn videos to the model
 		for x in porn:
 			self.model.addPornVideo(x, self.category_id, page_url);
 	
 	
 	def task_image(self, grab, task):
-		#print( 'Image downloaded for {0}'.format(task.url))
 		path = '{path}/{vkey}.jpg'.format(vkey = task.vkey, path = self.model.videos_preview_image_path)
 		grab.response.save(path)
 
@@ -81,7 +80,7 @@ class PyJizzParser(object):
 		c = PornHubCategoryParser(self.model)
 		c.run()
 	
-	def parsePage(self, category, page = 1):
+	def parseCategoryPage(self, category, page = 1):
 		if page == 0 or page == 1:
 			url = self.model.categories_url[category]
 		else:
@@ -97,7 +96,7 @@ if __name__ == '__main__':
 	m = model.Porn()
 	p = PyJizzParser(m)
 	p.parseCategories()
-	p.parsePage(0)
-	p.parsePage(0, 3)
+	p.parseCategoryPage(0)
+	p.parseCategoryPage(0, 3)
 	
 	print(m.porn[0])
