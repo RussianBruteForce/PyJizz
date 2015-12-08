@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from grab.spider import Spider, Task
+from youtube_dl import YoutubeDL
 import model
 
 class PornHubCategoryParser(Spider):
@@ -39,10 +40,12 @@ class PornHubPageParser(Spider):
 		self.category_id = category_id # from 0
 		self.page = page               # from 0 or 1
 		PornHubPageParser.initial_urls.append(page_url)
+		print("page parser created for page", page)
 		
 
 	def task_initial(self, grab, task):
 		porn = [] # list or porn videos from this page
+		print("parsing {c} page {p}".format(c = self.category_id, p = self.page))
 		
 		# get vkeys
 		for elem in grab.doc.select("//li[@class='videoblock']"):
@@ -53,7 +56,6 @@ class PornHubPageParser(Spider):
 		for elem in grab.doc.select("//li[@class='videoblock']/a[@class='img']"):
 			porn[i]['name'] = elem.attr('_vkey')
 			i += 1
-			print(porn[i]['name'])
 		
 		# if this is category url (page == 0), we should detect page url
 		page_url = str()
@@ -65,16 +67,19 @@ class PornHubPageParser(Spider):
 		#print(page_url)
 		# add porn videos to the model
 		for x in porn:
-			self.model.addPornVideo(x, self.category_id, page_url);
+			self.model.addPornVideo(x, self.category_id, page_url)
 	
 	
-	def task_image(self, grab, task):
-		path = '{path}/{vkey}.jpg'.format(vkey = task.vkey, path = self.model.videos_preview_image_path)
-		grab.response.save(path)
+	#def task_image(self, grab, task):
+	#	path = '{path}/{vkey}.jpg'.format(vkey = task.vkey, path = self.model.videos_preview_image_path)
+	#	grab.response.save(path)
 
 class PyJizzParser(object):
 	def __init__(self, model):
 		self.model = model
+		self.model.parser = self
+		self.ydl = YoutubeDL()
+		self.ydl.add_default_info_extractors()
 		
 	def parseCategories(self):
 		c = PornHubCategoryParser(self.model)
@@ -88,15 +93,20 @@ class PyJizzParser(object):
 				site = self.model.site,
 				page_url = self.model.porn[category]['page_url'],
 				page = page)
-		p = PornHubPageParser(m, url, category)
+		print("page parser creating for page", page)
+		p = PornHubPageParser(self.model, url, category, page)
 		p.run()
+		print("page parser exit for page", page)
 		
+	def getInfo(self, vkey):
+		info = self.ydl.extract_info('http://www.pornhub.com/view_video.php?viewkey={v}'.format(v = vkey), download=False)
+		return info
 
 if __name__ == '__main__':
 	m = model.Porn()
 	p = PyJizzParser(m)
 	p.parseCategories()
 	p.parseCategoryPage(0)
-	p.parseCategoryPage(0, 3)
+	#p.parseCategoryPage(0, 3)
 	
-	print(m.porn[0])
+	print(m.porn)

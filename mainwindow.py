@@ -45,17 +45,22 @@ class PyJizzMainWindow(QMainWindow):
 	def onNextPageButton(self):
 		page = self.ui.pageSpinBox.value() + 1
 		self.ui.pageSpinBox.setValue(page)
-		self.page.emit(page)
+		#self.page.emit(page)
 
 	@pyqtSlot()
 	def onPrevPageButton(self):
 		page = self.ui.pageSpinBox.value() - 1
 		self.ui.pageSpinBox.setValue(page)
-		self.page.emit(page)
+		#self.page.emit(page)
 	
 	@pyqtSlot(int)
 	def onPageSpinBox(self, page):
+		print("spinbox page now is ", page)
 		self.page.emit(page)
+		
+	def resetPages(self):
+		self.ui.pageSpinBox.setValue(1)
+		self.page.emit(1)
 
 if __name__ == '__main__':
 	app = QApplication(sys.argv)
