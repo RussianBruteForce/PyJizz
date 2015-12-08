@@ -16,8 +16,8 @@ class PyJizz(QObject):
 		self.parser = PyJizzParser(self.model)
 		self.player = QMediaPlayer()
 		self.player.setVideoOutput(self.mainwindow.player)
-		self.player.setMedia(QMediaContent(QUrl.fromLocalFile("/home/asmodeus/dev/python/tehno/PyJizz/123.mp4")));
-		self.player.setVolume(100);
+		self.player.setMedia(QMediaContent(QUrl("http://cdn2b.video.pornhub.phncdn.com/videos/201508/19/55394221/vl_720P_1591.0k_55394221.mp4?rs=200&ri=2900&ipa=2.94.184.41&s=1448912461&e=1448919661&h=db084a1408809a2b48c814156f2c30a6")))
+		self.player.setVolume(100)
 		self.connections()
 		
 		self.showCategories()
